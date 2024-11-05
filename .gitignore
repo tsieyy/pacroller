@@ -139,5 +139,3 @@ cython_debug/
 
 # Pycharm
 .idea
-
-src/config/telegram.json
