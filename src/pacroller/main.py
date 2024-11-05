@@ -11,7 +11,7 @@ import traceback
 from datetime import datetime
 from typing import List, Iterator
 from pacroller.utils import execute_with_io, UnknownQuestionError, back_readline, ask_interactive_question
-from pacroller.checker import log_checker, sync_err_is_net, upgrade_err_is_net, checkReport
+from pacroller.checker import sync_err_is_net, upgrade_err_is_net, CheckReport
 from pacroller.config import (CONFIG_DIR, CONFIG_FILE, LIB_DIR, DB_FILE, NEWS_FILE, PACMAN_LOG,
                               PACMAN_CONFIG, TIMEOUT, UPGRADE_TIMEOUT, NETWORK_RETRY, CUSTOM_SYNC,
                               SYNC_SH, EXTRA_SAFE, SHELL, HOLD, NEEDRESTART, NEEDRESTART_CMD, SYSTEMD,
@@ -149,7 +149,7 @@ def upgrade(interactive=False) -> List[str]:
     logger.info('upgrade end')
     return pacman_output
 
-def do_system_upgrade(debug=False, interactive=False) -> checkReport:
+def do_system_upgrade(debug=False, interactive=False) -> CheckReport:
     for _ in range(NETWORK_RETRY):
         try:
             sync()
@@ -197,17 +197,17 @@ def do_system_upgrade(debug=False, interactive=False) -> checkReport:
         pacman_log.seek(log_anchor)
         log = pacman_log.read().split('\n')
     try:
-        report = log_checker(stdout, log, debug=debug)
+        report = CheckReport.log_checker(stdout, log, debug=debug)
     except Exception:
         logger.exception('checker has crashed, here is the debug info')
         logger.setLevel(logging.DEBUG)
-        _report = log_checker(stdout, log, debug=True)
+        _report = CheckReport.log_checker(stdout, log, debug=True)
         raise
 
     logger.info(report.summary(verbose=True, show_package=False))
     return report
 
-def write_db(report: checkReport, error: Exception = None) -> None:
+def write_db(report: CheckReport, error: Exception = None) -> None:
     with open(LIB_DIR / DB_FILE, 'a') as db:
         db.write(json.dumps({'error': repr(error) if error else None, 'report': report.to_dict() if report else None}))
         db.write("\n")
@@ -390,7 +390,7 @@ def main() -> None:
         for entry in read_db():
             if report_dict := entry.get('report'):
                 count += 1
-                report = checkReport(**report_dict)
+                report = CheckReport(**report_dict)
                 if not failed and count == 1:
                     failed = report.failed
                 print(report.summary(verbose=args.verbose, show_package=True))

@@ -4,7 +4,7 @@ import re
 import logging
 from enum import Enum
 from pacroller.config import PACMAN_LOG
-from pacroller.checker import _log_parser, checkReport
+from pacroller.checker import CheckReport
 from pacroller.utils import back_readline
 
 
@@ -72,8 +72,8 @@ def main() -> None:
                 logs.append(log)
         for seq, log in enumerate(logs):
             logger.debug(f"report input {log=}")
-            report = checkReport()
-            _log_parser(log, report)
+            report = CheckReport()
+            report.log_parser(log)
             c = nocolors if args.no_color else colors
             summary = report.summary(show_package=not args.no_package, verbose=args.verbose).split('\n')
             in_section = ""
