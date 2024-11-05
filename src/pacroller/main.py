@@ -363,6 +363,8 @@ def main() -> None:
             if exc:
                 send_mail(f"{exc}\n\n{report.summary(verbose=args.verbose, show_package=False)}")
                 exit(2)
+            else:
+                send_mail(f"sync succeed!\n\n{report.summary(verbose=True, show_package=True)}")
             if NEEDRESTART:
                 run_needrestart()
             if PACMAN_SCC:
