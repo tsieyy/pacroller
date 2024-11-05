@@ -5,7 +5,7 @@ from base64 import b64decode
 import sys
 from typing import Any
 
-CONFIG_DIR = Path('/etc/pacroller')
+CONFIG_DIR = Path('/home/czy/PycharmProjects/pacroller/src/config')
 CONFIG_FILE = 'config.json'
 CONFIG_FILE_SMTP = 'smtp.json'
 CONFIG_FILE_TG = 'telegram.json'

@@ -6,12 +6,12 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setuptools.setup(
     name="pacroller",
     version="0.1.9",
-    author="Jerry Xiao",
-    author_email="pacroller@mail.jerryxiao.cc",
+    author="Jerry Xiao, tsieyy",
+    author_email="tsieyy@qq.com",
     description="unattended upgrade for archlinux",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/isjerryxiao/pacroller",
+    url="https://github.com/tsieyy/pacroller",
     packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
     classifiers=[
