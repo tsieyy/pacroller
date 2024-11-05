@@ -1,12 +1,14 @@
 #!/usr/bin/python
 
+import re
+import logging
+from enum import Enum
 from pacroller.config import PACMAN_LOG
 from pacroller.checker import _log_parser, checkReport
 from pacroller.utils import back_readline
-import logging
-import re
 
-class _colors:
+
+class _Colors(Enum):
     TITLE = '\033[96m'
     PINK = '\033[95m'
     BLUE = '\033[94m'
@@ -14,11 +16,18 @@ class _colors:
     WARN = '\033[93m'
     ERROR = '\033[91m'
     ENDC = '\033[0m'
-class _nocolors:
+
+    def __format__(self, format_spec):
+        return self.value
+
+
+class _NoColors:
     def __getattr__(self, attr: str) -> str:
         return ""
-colors = _colors()
-nocolors = _nocolors()
+
+colors = _Colors
+nocolors = _NoColors()
+
 
 def main() -> None:
     import argparse
