@@ -76,14 +76,12 @@ class CheckReport:
                 else:
                     raise RuntimeError(f"{c=}")
             if verbose:
-                pkg_ret.append('----UPGRADE----')
+                pkg_ret.append('#----UPGRADE----#' if upgraded else '')
                 pkg_ret.extend([f'upgrade {name} from {old} to {new}' for name, old, new in upgraded])
-                pkg_ret.append('----INSTALL----')
+                pkg_ret.append('#----INSTALL----#' if installed else '')
                 pkg_ret.extend(f'install {name} {new}' for name, _,  new in installed)
-                pkg_ret.append('----REMOVE----')
+                pkg_ret.append('#----REMOVE----#' if removed else '')
                 pkg_ret.extend(f'remove {name} {old}' for name, old, _ in removed)
-                pkg_ret.append('\n')
-
             else:
                 up, ins, rem = [[c[0] for c in x] for x in (upgraded, installed, removed)]
                 pkg_ret.append(f'upgrade: {" ".join(up)}' if up else '')
