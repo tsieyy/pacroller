@@ -10,7 +10,7 @@ from pacroller.config import IGNORED_PACNEW
 
 logger = logging.getLogger()
 
-REGEX: Dict[str, Pattern[str]] = {
+REGEX: dict[str, Pattern[str]] = {
     's_process_pkg_changes': r':: Processing package changes\.\.\.',
     's_post-transaction': r':: Running post-transaction hooks\.\.\.$',
     's_optdepend': r'(?i)(?:new )?optional dependencies for (.+)$',
@@ -30,8 +30,8 @@ for k, v in REGEX.items():
 
 
 class CheckReport:
-    def __init__(self, info: List[str] = None, warn: List[str] = None,
-                 crit: List[str] = None, changes: List[Tuple[str, ...]] = None,
+    def __init__(self, info: list[str] = None, warn: list[str] = None,
+                 crit: list[str] = None, changes: list[tuple[str, ...]] = None,
                  date: int = int(time())) -> None:
         self._info = info or list()
         self._warn = warn or list()
@@ -48,8 +48,8 @@ class CheckReport:
             if self._warn or self._crit:
                 return True
         return False
-
-    def to_dict(self) -> dict:
+    @property
+    def dict_report(self) -> dict:
         return {'info': self._info, 'warn': self._warn, 'crit': self._crit, 'changes': self._changes, 'date': self._date}
 
     def summary(self, verbose=True, show_package=False, indent=2) -> str:
@@ -64,10 +64,7 @@ class CheckReport:
             ret.append("Collected Info:")
             ret.extend([" " * indent + i for i in self._info])
         if show_package:
-            pkg_ret = list()
-            installed = list()
-            upgraded = list()
-            removed = list()
+            pkg_ret, installed, upgraded, removed = [], [], [], []
             for c in self._changes:
                 name, old, new = c
                 if old and new:
@@ -79,23 +76,19 @@ class CheckReport:
                 else:
                     raise RuntimeError(f"{c=}")
             if verbose:
-                for c in upgraded:
-                    name, old, new = c
-                    pkg_ret.append(f'upgrade {name} from {old} to {new}')
-                for c in installed:
-                    name, _, new = c
-                    pkg_ret.append(f'install {name} {new}')
-                for c in removed:
-                    name, old, _ = c
-                    pkg_ret.append(f'remove {name} {old}')
+                pkg_ret.append('----UPGRADE----')
+                pkg_ret.extend([f'upgrade {name} from {old} to {new}' for name, old, new in upgraded])
+                pkg_ret.append('----INSTALL----')
+                pkg_ret.extend(f'install {name} {new}' for name, _,  new in installed)
+                pkg_ret.append('----REMOVE----')
+                pkg_ret.extend(f'remove {name} {old}' for name, old, _ in removed)
+                pkg_ret.append('\n')
+
             else:
                 up, ins, rem = [[c[0] for c in x] for x in (upgraded, installed, removed)]
-                if up:
-                    pkg_ret.append(f'upgrade: {" ".join(up)}')
-                if ins:
-                    pkg_ret.append(f'install: {" ".join(ins)}')
-                if rem:
-                    pkg_ret.append(f'remove: {" ".join(rem)}')
+                pkg_ret.append(f'upgrade: {" ".join(up)}' if up else '')
+                pkg_ret.append(f'install: {" ".join(ins)}' if up else '')
+                pkg_ret.append(f'remove: {" ".join(rem)}' if up else '')
             if pkg_ret:
                 ret.append("Package changes:")
                 ret.extend([" " * indent + i for i in pkg_ret])
@@ -115,7 +108,7 @@ class CheckReport:
         logger.debug(f'report crit {text}')
         self._crit.append(text)
 
-    def change(self, name: str, old: str, new: str) -> None:
+    def change(self, name: str, old: str | None, new: str | None) -> None:
         logger.debug(f'report change {name=} {old=} {new=}')
         self._changes.append((name, old, new))
 
@@ -275,10 +268,10 @@ class CheckReport:
         if debug:
             Path('/tmp/pacroller-stdout.log').write_text('\n'.join(stdout))
             Path('/tmp/pacroller-pacman.log').write_text('\n'.join(log))
-        report = cls()
-        report.stdout_parser(stdout)
-        report.log_parser(log)
-        return report
+        rpt = cls()
+        rpt.stdout_parser(stdout)
+        rpt.log_parser(log)
+        return rpt
 
 def _split_log_line(line: str) -> Tuple[int, str, str]:
     time, source, msg = line.split(' ', maxsplit=2)
@@ -306,10 +299,12 @@ def upgrade_err_is_net(output: str) -> bool:
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
+    Path('/tmp/pacroller-stdout.log').touch()
     stdout = Path('/tmp/pacroller-stdout.log').read_text().split('\n')
     # log = Path('/tmp/pacroller-pacman.log').read_text().split('\n')
     report = CheckReport()
+    report._changes = [('pack1', 'v1.0', 'v1.2'), ('pack2', 'v1.2', 'v1.3'), ('pack3', 'v1.0', None), ('pack4', None, 'v2.0')]
     report.stdout_parser(stdout)
     # report.log_parser(log)
-    print(report.to_dict())
+    print(report.dict_report)
     print(report.summary(show_package=True, verbose=True))

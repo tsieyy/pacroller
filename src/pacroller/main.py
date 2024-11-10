@@ -209,7 +209,7 @@ def do_system_upgrade(debug=False, interactive=False) -> CheckReport:
 
 def write_db(report: CheckReport, error: Exception = None) -> None:
     with open(LIB_DIR / DB_FILE, 'a') as db:
-        db.write(json.dumps({'error': repr(error) if error else None, 'report': report.to_dict() if report else None}))
+        db.write(json.dumps({'error': repr(error) if error else None, 'report': report.dict_report if report else None}))
         db.write("\n")
 
 def read_db() -> Iterator[dict]:
