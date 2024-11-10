@@ -57,9 +57,11 @@ class MailSender:
                 for recipient in mailto:
                     url = f'https://{TG_API_HOST}/bot{TG_BOT_TOKEN}/sendMessage'
                     headers = {'Content-Type': 'application/json'}
-                    data = json.dumps({"chat_id": recipient, "text": f"<b>{subject}</b>\n\n<code>{text[:4000]}</code>",
+                    data = json.dumps({"chat_id": recipient,
+                                       "text": f"<b>{subject}</b>\n\n<pre language='shell'>{text[:4000]}</pre>",
                                        "parse_mode": "HTML"})
-                    req = urllib.request.Request(url, data=data.encode('utf-8'), headers={**DEF_HTTP_HDRS, **headers})
+                    req = urllib.request.Request(url, data=data.encode('utf-8'),
+                                                headers={**DEF_HTTP_HDRS, **headers})
                     resp = urllib.request.urlopen(req).read().decode('utf-8')
                     content = json.loads(resp)
                     if not content.get("ok"):
@@ -78,4 +80,5 @@ class MailSender:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
-    print(MailSender().send_text_plain("This is a test mail\nIf you see this mail, your notification config is working."))
+    # print(MailSender().send_text_plain("This is a test mail\nIf you see this mail, your notification config is working."))
+    print(MailSender().send_text_plain("package from v1.0 to v1.2"))
